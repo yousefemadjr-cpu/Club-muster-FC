@@ -1,0 +1,709 @@
+# Club-muster-FC
+Club Master FC ⚽ — A football management game where you build your dream team, sign players, manage transfers, and lead your club to glory
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club Master FC</title>
+<style>
+:root{--bg:#08111f;--panel:#111e30;--panel2:#182940;--green:#29d17d;--gold:#ffcb55;--text:#f2f6fc;--muted:#9bacc2;--red:#ff626b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Tahoma,sans-serif}
+header{padding:22px 16px;background:linear-gradient(135deg,#073c32,#10233c 70%,#162d49);border-bottom:1px solid #29415b}
+.brand{font-size:25px;font-weight:900;letter-spacing:.5px}
+.brand span{color:var(--green)}
+header p{color:#c4d5e5;margin:8px 0 0;font-size:13px}
+.wrap{max-width:1000px;margin:auto;padding:15px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:15px}
+.stat,.card{background:var(--panel);border:1px solid #23344a;border-radius:13px;padding:13px}
+.stat small{display:block;color:var(--muted);font-size:11px;margin-bottom:7px}
+.stat strong{font-size:17px}
+.green{color:var(--green)}.gold{color:var(--gold)}
+nav{display:flex;gap:7px;overflow:auto;padding:2px 0 12px}
+nav button{white-space:nowrap;background:var(--panel2);color:#d7e2ef;border:1px solid #2b3e55;border-radius:9px;padding:11px 14px;cursor:pointer}
+nav button.active{background:var(--green);color:#062116;border-color:var(--green);font-weight:bold}
+h2{font-size:19px;margin:5px 0 13px}
+h3{font-size:15px;margin:0 0 10px}
+p{line-height:1.6}
+.muted{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.btn{background:var(--green);color:#062318;border:0;border-radius:9px;padding:10px 13px;font-weight:bold;cursor:pointer}
+.btn.secondary{background:#253a53;color:white}
+.btn.goldbtn{background:var(--gold);color:#342400}
+.btn.danger{background:#4b222d;color:#ffd9dc}
+button:disabled{opacity:.4;cursor:not-allowed}
+input,select{background:#0b1727;color:white;border:1px solid #344a63;border-radius:8px;padding:10px;max-width:100%;width:100%;margin:5px 0 10px}
+label{font-size:12px;color:var(--muted)}
+.player{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#17273a;border:1px solid #263a50;border-radius:10px;padding:10px;margin:7px 0}
+.player strong{font-size:13px}.player small{display:block;color:var(--muted);margin-top:4px;font-size:11px}
+.rating{background:#234437;color:#8dffc3;border-radius:7px;padding:6px;font-weight:bold}
+.tag{font-size:11px;border-radius:6px;padding:5px 7px;background:#263a52;color:#d5e6f7}
+.pitch{background:linear-gradient(0deg,#105238,#126642);border:2px solid #60a47c;border-radius:12px;padding:12px 8px;margin:10px 0;position:relative;overflow:hidden}
+.pitch:before{content:"";position:absolute;inset:50% 0 auto;border-top:1px solid #8bc3a2}
+.pitch:after{content:"";position:absolute;width:100px;height:100px;border:1px solid #8bc3a2;border-radius:50%;left:calc(50% - 50px);top:calc(50% - 50px)}
+.line{display:flex;justify-content:space-around;gap:4px;position:relative;z-index:1;margin:12px 0 19px}
+.slot{background:#0a3526df;border:1px solid #77d4a1;border-radius:9px;padding:7px 3px;text-align:center;min-width:0;width:23%;font-size:11px;cursor:pointer}
+.slot b{display:block;font-size:14px;color:#fff;margin-bottom:4px}
+.slot span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result{text-align:center;padding:20px 10px;background:#0b1727;border-radius:12px;margin:12px 0}
+.score{font-size:36px;font-weight:900;margin:10px}
+.notice{padding:11px;border-radius:9px;background:#172b3d;color:#dceaf7;font-size:13px;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:center;padding:10px 5px;border-bottom:1px solid #2a3b50}
+th{color:var(--muted);font-weight:normal}
+tr.me{background:#153b31;color:#a4ffd1;font-weight:bold}
+.section{margin-bottom:14px}
+footer{text-align:center;color:#71859e;font-size:11px;padding:24px 8px}
+@media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.stat strong{font-size:16px}.wrap{padding:11px}.brand{font-size:22px}.slot{font-size:10px;padding:7px 2px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand">⚽ CLUB <span>MASTER FC</span></div>
+ <p>ابنِ فريقك · أدر انتقالاتك · اصنع تاريخ ناديك</p>
+</header>
+<main class="wrap">
+ <div class="stats">
+  <div class="stat"><small>💰 الميزانية</small><strong class="gold" id="money">20M €</strong></div>
+  <div class="stat"><small>⭐ قوة الفريق</small><strong id="power">75</strong></div>
+  <div class="stat"><small>🏆 نقاط الدوري</small><strong id="points">0</strong></div>
+  <div class="stat"><small>📅 الموسم</small><strong id="season">1</strong></div>
+ </div>
+ <nav id="nav">
+  <button class="active" data-page="home">🏠 الرئيسية</button>
+  <button data-page="squad">👥 الفريق</button>
+  <button data-page="market">🔄 الانتقالات</button>
+  <button data-page="matches">⚽ المباريات</button>
+  <button data-page="league">🏆 الدوري</button>
+  <button data-page="settings">⚙️ النادي</button>
+ </nav>
+ <div id="app"></div>
+ <footer>CLUB MASTER FC · لعبة إدارة كرة قدم مستقلة</footer>
+</main>
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const initialPlayers=[
+{id:1,name:"عمر الشناوي",pos:"GK",ovr:76,value:3.2},
+{id:2,name:"كريم حمدي",pos:"DF",ovr:74,value:2.8},
+{id:3,name:"أحمد منصور",pos:"DF",ovr:77,value:3.5},
+{id:4,name:"يوسف علي",pos:"DF",ovr:73,value:2.4},
+{id:5,name:"مروان فؤاد",pos:"DF",ovr:75,value:3},
+{id:6,name:"آدم مصطفى",pos:"MF",ovr:79,value:4.5},
+{id:7,name:"زياد حسن",pos:"MF",ovr:76,value:3.6},
+{id:8,name:"علي رامي",pos:"MF",ovr:78,value:4.2},
+{id:9,name:"عمر ياسين",pos:"FW",ovr:80,value:5.2},
+{id:10,name:"مالك إبراهيم",pos:"FW",ovr:77,value:4},
+{id:11,name:"سيف خالد",pos:"FW",ovr:75,value:3.4},
+{id:12,name:"حسن سامي",pos:"GK",ovr:68,value:0.8},
+{id:13,name:"فارس محمود",pos:"DF",ovr:70,value:1.4},
+{id:14,name:"نور الدين",pos:"DF",ovr:69,value:1.2},
+{id:15,name:"رامي أشرف",pos:"MF",ovr:72,value:1.8},
+{id:16,name:"باسم طارق",pos:"MF",ovr:70,value:1.5},
+{id:17,name:"يحيى عادل",pos:"FW",ovr:71,value:1.9},
+{id:18,name:"طارق أمين",pos:"FW",ovr:68,value:1.1}
+];
+const marketPlayers=[
+{name:"ماتيو سيلفا",pos:"FW",ovr:84,value:8.5},
+{name:"لوكا فيرّو",pos:"MF",ovr:83,value:8},
+{name:"دانيال كروز",pos:"DF",ovr:82,value:7},
+{name:"إلياس رويز",pos:"GK",ovr:81,value:6.5},
+{name:"آدم جونسون",pos:"FW",ovr:79,value:5},
+{name:"نادر منصور",pos:"MF",ovr:78,value:4.8},
+{name:"رافاييل كوستا",pos:"DF",ovr:77,value:4.2},
+{name:"سامي جابر",pos:"GK",ovr:73,value:2.8},
+{name:"كريم سعيد",pos:"FW",ovr:74,value:3.2},
+{name:"ماركو بيل",pos:"MF",ovr:81,value:6.2},
+{name:"بيدرو ليما",pos:"DF",ovr:80,value:6},
+{name:"فادي يوسف",pos:"FW",ovr:72,value:2.5}
+];
+const clubs=["النمور","الصقور","الأسود","الفرسان","النسور","الذئاب","النجوم","الأبطال","الشياطين الحمر","الملكي","الاتحاد","الشباب","المدينة","الأمل","البرق"];
+let state;
+function fresh(){
+ const roster=initialPlayers.map(p=>({...p}));
+ return {club:"Club Master FC",money:20,season:1,week:1,players:roster,starting:roster.slice(0,11).map(p=>p.id),formation:"4-3-3",tactic:"متوازن",played:[],wins:0,draws:0,losses:0,gf:0,ga:0,points:0,history:[],market:marketPlayers.map((p,i)=>({...p,id:100+i}))};
+}
+function load(){
+ try{let s=JSON.parse(localStorage.getItem("cmfc_save"));if(s&&s.players&&s.starting) return s;}catch(e){}
+ return fresh();
+}
+state=load();
+let page="home",lastMessage="أهلاً بك في Club Master FC! ابدأ بإدارة فريقك واستعد لأول مباراة.";
+const fmt=n=>Number(n).toFixed(1)+"M €";
+const posName=p=>({GK:"حارس",DF:"دفاع",MF:"وسط",FW:"هجوم"}[p]||p);
+function save(){try{localStorage.setItem("cmfc_save",JSON.stringify(state));}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function rating(){let arr=state.players.filter(p=>state.starting.includes(p.id));return arr.length?Math.round(arr.reduce((a,p)=
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club Master FC</title>
+<style>
+:root{--bg:#08111f;--panel:#111e30;--panel2:#182940;--green:#29d17d;--gold:#ffcb55;--text:#f2f6fc;--muted:#9bacc2;--red:#ff626b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Tahoma,sans-serif}
+header{padding:22px 16px;background:linear-gradient(135deg,#073c32,#10233c 70%,#162d49);border-bottom:1px solid #29415b}
+.brand{font-size:25px;font-weight:900;letter-spacing:.5px}
+.brand span{color:var(--green)}
+header p{color:#c4d5e5;margin:8px 0 0;font-size:13px}
+.wrap{max-width:1000px;margin:auto;padding:15px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:15px}
+.stat,.card{background:var(--panel);border:1px solid #23344a;border-radius:13px;padding:13px}
+.stat small{display:block;color:var(--muted);font-size:11px;margin-bottom:7px}
+.stat strong{font-size:17px}
+.green{color:var(--green)}.gold{color:var(--gold)}
+nav{display:flex;gap:7px;overflow:auto;padding:2px 0 12px}
+nav button{white-space:nowrap;background:var(--panel2);color:#d7e2ef;border:1px solid #2b3e55;border-radius:9px;padding:11px 14px;cursor:pointer}
+nav button.active{background:var(--green);color:#062116;border-color:var(--green);font-weight:bold}
+h2{font-size:19px;margin:5px 0 13px}
+h3{font-size:15px;margin:0 0 10px}
+p{line-height:1.6}
+.muted{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.btn{background:var(--green);color:#062318;border:0;border-radius:9px;padding:10px 13px;font-weight:bold;cursor:pointer}
+.btn.secondary{background:#253a53;color:white}
+.btn.goldbtn{background:var(--gold);color:#342400}
+.btn.danger{background:#4b222d;color:#ffd9dc}
+button:disabled{opacity:.4;cursor:not-allowed}
+input,select{background:#0b1727;color:white;border:1px solid #344a63;border-radius:8px;padding:10px;max-width:100%;width:100%;margin:5px 0 10px}
+label{font-size:12px;color:var(--muted)}
+.player{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#17273a;border:1px solid #263a50;border-radius:10px;padding:10px;margin:7px 0}
+.player strong{font-size:13px}.player small{display:block;color:var(--muted);margin-top:4px;font-size:11px}
+.rating{background:#234437;color:#8dffc3;border-radius:7px;padding:6px;font-weight:bold}
+.tag{font-size:11px;border-radius:6px;padding:5px 7px;background:#263a52;color:#d5e6f7}
+.pitch{background:linear-gradient(0deg,#105238,#126642);border:2px solid #60a47c;border-radius:12px;padding:12px 8px;margin:10px 0;position:relative;overflow:hidden}
+.pitch:before{content:"";position:absolute;inset:50% 0 auto;border-top:1px solid #8bc3a2}
+.pitch:after{content:"";position:absolute;width:100px;height:100px;border:1px solid #8bc3a2;border-radius:50%;left:calc(50% - 50px);top:calc(50% - 50px)}
+.line{display:flex;justify-content:space-around;gap:4px;position:relative;z-index:1;margin:12px 0 19px}
+.slot{background:#0a3526df;border:1px solid #77d4a1;border-radius:9px;padding:7px 3px;text-align:center;min-width:0;width:23%;font-size:11px;cursor:pointer}
+.slot b{display:block;font-size:14px;color:#fff;margin-bottom:4px}
+.slot span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result{text-align:center;padding:20px 10px;background:#0b1727;border-radius:12px;margin:12px 0}
+.score{font-size:36px;font-weight:900;margin:10px}
+.notice{padding:11px;border-radius:9px;background:#172b3d;color:#dceaf7;font-size:13px;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:center;padding:10px 5px;border-bottom:1px solid #2a3b50}
+th{color:var(--muted);font-weight:normal}
+tr.me{background:#153b31;color:#a4ffd1;font-weight:bold}
+.section{margin-bottom:14px}
+footer{text-align:center;color:#71859e;font-size:11px;padding:24px 8px}
+@media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.stat strong{font-size:16px}.wrap{padding:11px}.brand{font-size:22px}.slot{font-size:10px;padding:7px 2px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand">⚽ CLUB <span>MASTER FC</span></div>
+ <p>ابنِ فريقك · أدر انتقالاتك · اصنع تاريخ ناديك</p>
+</header>
+<main class="wrap">
+ <div class="stats">
+  <div class="stat"><small>💰 الميزانية</small><strong class="gold" id="money">20M €</strong></div>
+  <div class="stat"><small>⭐ قوة الفريق</small><strong id="power">75</strong></div>
+  <div class="stat"><small>🏆 نقاط الدوري</small><strong id="points">0</strong></div>
+  <div class="stat"><small>📅 الموسم</small><strong id="season">1</strong></div>
+ </div>
+ <nav id="nav">
+  <button class="active" data-page="home">🏠 الرئيسية</button>
+  <button data-page="squad">👥 الفريق</button>
+  <button data-page="market">🔄 الانتقالات</button>
+  <button data-page="matches">⚽ المباريات</button>
+  <button data-page="league">🏆 الدوري</button>
+  <button data-page="settings">⚙️ النادي</button>
+ </nav>
+ <div id="app"></div>
+ <footer>CLUB MASTER FC · لعبة إدارة كرة قدم مستقلة</footer>
+</main>
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const initialPlayers=[
+{id:1,name:"عمر الشناوي",pos:"GK",ovr:76,value:3.2},
+{id:2,name:"كريم حمدي",pos:"DF",ovr:74,value:2.8},
+{id:3,name:"أحمد منصور",pos:"DF",ovr:77,value:3.5},
+{id:4,name:"يوسف علي",pos:"DF",ovr:73,value:2.4},
+{id:5,name:"مروان فؤاد",pos:"DF",ovr:75,value:3},
+{id:6,name:"آدم مصطفى",pos:"MF",ovr:79,value:4.5},
+{id:7,name:"زياد حسن",pos:"MF",ovr:76,value:3.6},
+{id:8,name:"علي رامي",pos:"MF",ovr:78,value:4.2},
+{id:9,name:"عمر ياسين",pos:"FW",ovr:80,value:5.2},
+{id:10,name:"مالك إبراهيم",pos:"FW",ovr:77,value:4},
+{id:11,name:"سيف خالد",pos:"FW",ovr:75,value:3.4},
+{id:12,name:"حسن سامي",pos:"GK",ovr:68,value:0.8},
+{id:13,name:"فارس محمود",pos:"DF",ovr:70,value:1.4},
+{id:14,name:"نور الدين",pos:"DF",ovr:69,value:1.2},
+{id:15,name:"رامي أشرف",pos:"MF",ovr:72,value:1.8},
+{id:16,name:"باسم طارق",pos:"MF",ovr:70,value:1.5},
+{id:17,name:"يحيى عادل",pos:"FW",ovr:71,value:1.9},
+{id:18,name:"طارق أمين",pos:"FW",ovr:68,value:1.1}
+];
+const marketPlayers=[
+{name:"ماتيو سيلفا",pos:"FW",ovr:84,value:8.5},
+{name:"لوكا فيرّو",pos:"MF",ovr:83,value:8},
+{name:"دانيال كروز",pos:"DF",ovr:82,value:7},
+{name:"إلياس رويز",pos:"GK",ovr:81,value:6.5},
+{name:"آدم جونسون",pos:"FW",ovr:79,value:5},
+{name:"نادر منصور",pos:"MF",ovr:78,value:4.8},
+{name:"رافاييل كوستا",pos:"DF",ovr:77,value:4.2},
+{name:"سامي جابر",pos:"GK",ovr:73,value:2.8},
+{name:"كريم سعيد",pos:"FW",ovr:74,value:3.2},
+{name:"ماركو بيل",pos:"MF",ovr:81,value:6.2},
+{name:"بيدرو ليما",pos:"DF",ovr:80,value:6},
+{name:"فادي يوسف",pos:"FW",ovr:72,value:2.5}
+];
+const clubs=["النمور","الصقور","الأسود","الفرسان","النسور","الذئاب","النجوم","الأبطال","الشياطين الحمر","الملكي","الاتحاد","الشباب","المدينة","الأمل","البرق"];
+let state;
+function fresh(){
+ const roster=initialPlayers.map(p=>({...p}));
+ return {club:"Club Master FC",money:20,season:1,week:1,players:roster,starting:roster.slice(0,11).map(p=>p.id),formation:"4-3-3",tactic:"متوازن",played:[],wins:0,draws:0,losses:0,gf:0,ga:0,points:0,history:[],market:marketPlayers.map((p,i)=>({...p,id:100+i}))};
+}
+function load(){
+ try{let s=JSON.parse(localStorage.getItem("cmfc_save"));if(s&&s.players&&s.starting) return s;}catch(e){}
+ return fresh();
+}
+state=load();
+let page="home",lastMessage="أهلاً بك في Club Master FC! ابدأ بإدارة فريقك واستعد لأول مباراة.";
+const fmt=n=>Number(n).toFixed(1)+"M €";
+const posName=p=>({GK:"حارس",DF:"دفاع",MF:"وسط",FW:"هجوم"}[p]||p);
+function save(){try{localStorage.setItem("cmfc_save",JSON.stringify(state));}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function rating(){let arr=state.players.filter(p=>state.starting.includes(p.id));return arr.length?Math.round(arr.reduce((a,p)=>a+p.ovr,0)/arr.length):0;}
+function updateStats(){
+ $("money").textContent=fmt(state.money);
+ $("power").textContent=rating();
+ $("points").textContent=state.points;
+ $("season").textContent=state.season;
+}
+function btn(label,action,cls=""){return `<button class="btn ${cls}" data-action="${action}">${label}</button>`;}
+function card(title,content){return `<section class="card section"><h3>${title}</h3>${content}</section>`;}
+function showMessage(s){lastMessage=s;render();}
+function render(){
+ updateStats();
+ document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+ const pages={home:homePage,squad:squadPage,market:marketPage,matches:matchesPage,league:leaguePage,settings:settingsPage};
+ $("app").innerHTML=pages[page]();
+}
+function homePage(){
+ let next=state.week<=10?`الجولة ${state.week} من 10`:"انتهى الموسم";
+ let recent=state.history.length?state.history[state.history.length-1]:"لم تلعب أي مباراة بعد.";
+ return `<h2>مرحباً بك يا مدير النادي 👋</h2>
+ <div class="notice">${esc(lastMessage)}</div>
+ <div class="grid">
+ ${card("🏟️ مركز إدارة النادي",`<p class="muted">النادي الحالي</p><h2>${esc(state.club)}</h2><p>القوة الإجمالية: <b class="green">${rating()}</b></p><p>الموسم: ${state.season} · ${next}</p>${btn("إدارة الفريق","page-squad")}${btn("سوق الانتقالات","page-market","secondary")}`)}
+ ${card("⚽ المباراة القادمة",`<div class="result"><div class="muted">الدوري المحلي</div><h3>${esc(state.club)}</h3><div class="score">VS</div><h3>${esc(opponent())}</h3><p class="muted">الجولة ${Math.min(state.week,10)}</p></div>${state.week<=10?btn("العب المباراة الآن","play","goldbtn"):btn("ابدأ موسم جديد","newseason")}`)}
+ ${card("📊 آخر نتيجة",`<p>${esc(recent)}</p><p class="muted">لعبت ${state.played.length} مباريات حتى الآن.</p>${btn("عرض النتائج","page-matches","secondary")}`)}
+ ${card("🎯 نصائح المدير",`<p class="muted">• حافظ على 11 لاعباً في التشكيلة.</p><p class="muted">• اشترِ لاعبين حسب احتياجاتك.</p><p class="muted">• الفوز يمنحك 3 نقاط ومكافأة مالية.</p><p class="muted">• احفظ تقدمك على نفس المتصفح تلقائياً.</p>`)}
+ </div>`;
+}
+function opponent(){
+ let idx=(state.week-1+state.season*3)%clubs.length;
+ let name=clubs[idx];
+ if(name===state.club)name=clubs[(idx+1)%clubs.length];
+ return name;
+}
+function squadPage(){
+ let arr=state.players.filter(p=>state.starting.includes(p.id));
+ const rows=arr.map(p=>`<div class="player"><div><strong>${esc(p.name)}</strong><small>${posName(p.pos)} · تقييم ${p.ovr}</small></div><span class="rating">${p.ovr}</span><button class="btn secondary" data-action="bench-${p.id}">إخراج</button></div>`).join("");
+ const bench=state.players.filter(p=>!state.starting.includes(p.id)).map(p=>`<div class="player"><div><strong>${esc(p.name)}</strong><small>${posName(p.pos)} · تقييم ${p.ovr}</small></div><span class="rating">${p.ovr}</span><button class="btn" data-action="start-${p.id}" ${state.starting.length>=11?"disabled":""}>إضافة</button></div>`).join("");
+ const slots=[
+ ["GK","حارس المرمى"],["DF","مدافع"],["DF","مدافع"],["DF","مدافع"],["DF","مدافع"],
+ ["MF","وسط"],["MF","وسط"],["MF","وسط"],["FW","مهاجم"],["FW","مهاجم"],["FW","مهاجم"]
+ ];
+ const groups=[arr.filter(p=>p.pos==="FW"),arr.filter(p=>p.pos==="MF"),arr.filter(p=>p.pos==="DF"),arr.filter(p=>p.pos==="GK")];
+ const pitch=groups.map(g=>`<div class="line">${g.map(p=>`<div class="slot" data-action="bench-${p.id}"><b>${p.ovr}</b><span>${esc(p.name)}</span><span>${p.pos}</span></div>`).join("")}</div>`).join("");
+ return `<h2>👥 تشكيلتك الأساسية</h2>
+ ${card("📋 خطة اللعب",`<label>اختيار الخطة</label><select id="formation"><option ${state.formation==="4-3-3"?"selected":""}>4-3-3</option><option ${state.formation==="4-4-2"?"selected":""}>4-4-2</option><option ${state.formation==="3-5-2"?"selected":""}>3-5-2</option></select><label>أسلوب اللعب</label><select id="tactic"><option ${state.tactic==="متوازن"?"selected":""}>متوازن</option><option ${state.tactic==="هجومي"?"selected":""}>هجومي</option><option ${state.tactic==="دفاعي"?"selected":""}>دفاعي</option></select>${btn("حفظ الخطة","save-tactic")}`)}
+ ${card("🏟️ ملعب الفريق",`<div class="pitch">${pitch}</div><p class="muted">اضغط على لاعب في الملعب لإخراجه من التشكيلة.</p><p>اللاعبون الأساسيون: ${arr.length}/11</p>`)}
+ ${card("🟢 التشكيلة الأساسية",rows||"<p>أضف لاعبين إلى التشكيلة.</p>")}
+ ${card("🪑 دكة البدلاء",bench||"<p>لا يوجد لاعبون إضافيون.</p>")}`;
+}
+function marketPage(){
+ const market=state.market.map(p=>`<div class="player"><div><strong>${esc(p.name)}</strong><small>${posName(p.pos)} · تقييم ${p.ovr} · ${fmt(p.value)}</small></div><span class="rating">${p.ovr}</span><button class="btn" data-action="buy-${p.id}" ${state.money<p.value?"disabled":""}>شراء</button></div>`).join("");
+ const sell=state.players.map(p=>`<div class="player"><div><strong>${esc(p.name)}</strong><small>${posName(p.pos)} · تقييم ${p.ovr} · قيمة ${fmt(p.value)}</small></div><button class="btn danger" data-action="sell-${p.id}">بيع</button></div>`).join("");
+ return `<h2>🔄 سوق الانتقالات</h2><div class="notice">ميزانيتك الحالية: <b class="gold">${fmt(state.money)}</b>. قيمة البيع تساوي 80% من قيمة اللاعب.</div>
+ ${card("🛒 اللاعبون المتاحون للشراء",market)}
+ ${card("💸 بيع لاعب من فريقك",sell)}`;
+}
+function matchesPage(){
+ const history=state.history.slice().reverse().map(h=>`<tr><td>${h.season}</td><td>${h.week}</td><td>${esc(h.opponent)}</td><td>${h.gf} - ${h.ga}</td><td>${h.gf>h.ga?"فوز":h.gf===h.ga?"تعادل":"خسارة"}</td></tr>`).join("");
+ return `<h2>⚽ المباريات والنتائج</h2>
+ ${card("المباراة القادمة",`<div class="result"><h3>${esc(state.club)}</h3><div class="score">VS</div><h3>${esc(opponent())}</h3><p class="muted">الجولة ${Math.min(state.week,10)}</p>${state.week<=10?btn("بدء المباراة","play","goldbtn"):btn("بدء موسم جديد","newseason")}</div>`)}
+ ${card("📜 سجل المباريات",`<div style="overflow-x:auto"><table><thead><tr><th>موسم</th><th>جولة</th><th>الخصم</th><th>النتيجة</th><th>الحالة</th></tr></thead><tbody>${history||'<tr><td colspan="5">لا توجد نتائج حتى الآن</td></tr>'}</tbody></table></div>`)}
+ ${card("📈 إحصائيات الموسم",`<p>لعب: ${state.played.length} · فوز: ${state.wins} · تعادل: ${state.draws} · خسارة: ${state.losses}</p><p>أهدافك: ${state.gf} · أهداف الخصوم: ${state.ga}</p>`)}`;
+}
+function leaguePage(){
+ let table=clubs.filter(c=>c!==state.club).slice(0,9).map((c,i)=>({name:c,pts:Math.max(0,24-i*2+((state.season+i)%4)),gf:18+i,ga:10+i*2,played:10})); 
+ table.push({name:state.club,pts:state.points,gf:state.gf,ga:state.ga,played:state.played.length});
+ table.sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga));
+ return `<h2>🏆 جدول الدوري</h2>${card("الموسم "+state.season,`<div style="overflow-x:auto"><table><thead><tr><th>#</th><th>النادي</th><th>لعب</th><th>له</th><th>عليه</th><th>نقاط</th></tr></thead><tbody>${table.map((t,i)=>`<tr class="${t.name===state.club?"me":""}"><td>${i+1}</td><td>${esc(t.name)}</td><td>${t.played}</td><td>${t.gf}</td><td>${t.ga}</td><td><b>${t.pts}</b></td></tr>`).join("")}</tbody></table></div><p class="muted">نتائج الأندية الأخرى محاكاة تقريبية، بينما نتائج ناديك محفوظة من مبارياتك.</p>`)}`;
+}
+function settingsPage(){
+ return `<h2>⚙️ إعدادات النادي</h2>
+ ${card("🏟️ اسم النادي",`<label>اكتب اسم ناديك</label><input id="clubname" maxlength="30" value="${esc(state.club)}" placeholder="اسم النادي"><p>${btn("حفظ الاسم","save-club")}</p>`)}
+ ${card("💾 حفظ اللعبة",`<p class="muted">تُحفظ بيانات اللعبة تلقائياً في المتصفح الحالي.</p>${btn("حفظ الآن","save-game")} ${btn("بدء لعبة جديدة","reset","danger")}`)}
+ ${card("ℹ️ عن اللعبة",`<p>Club Master FC هي لعبة مستقلة لإدارة كرة القدم، وليست لعبة رسمية لأي اتحاد أو نادٍ.</p><p class="muted">تقدم اللعبة محفوظ على نفس المتصفح والجهاز. مسح بيانات المتصفح قد يؤدي إلى فقدان الحفظ.</p>`)}`;
+}
+function playMatch(){
+ if(state.week>10){showMessage("انتهى الموسم! ابدأ موسماً جديداً لمواصلة اللعب.");return;}
+ if(state.starting.length<11){showMessage("لازم تختار 11 لاعباً في التشكيلة قبل المباراة.");page="squad";return render();}
+ const arr=state.players.filter(p=>state.starting.includes(p.id));
+ const power=arr.reduce((a,p)=>a+p.ovr,0)/arr.length;
+ const atk=arr.filter(p=>p.pos==="FW").reduce((a,p)=>a+p.ovr,0)/3;
+ const mid=arr.filter(p=>p.pos==="MF").reduce((a,p)=>a+p.ovr,0)/3;
+ const def=arr.filter(p=>p.pos==="DF").reduce((a,p)=>a+p.ovr,0)/4;
+ const keeper=arr.find(p=>p.pos==="GK")?.ovr||60;
+ let attack=atk*.45+mid*.3+power*.25;
+ let defence=def*.45+keeper*.3+power*.25;
+ if(state.tactic==="هجومي"){attack+=5;defence-=4;}
+ if(state.tactic==="دفاعي"){attack-=4;defence+=5;}
+ let oppPower=69+Math.random()*13;
+ let ourGoals=0,oppGoals=0;
+ for(let i=0;i<5;i++){
+  if(Math.random()<Math.max(.08,Math.min(.66,.27+(attack-oppPower)/100)))ourGoals++;
+  if(Math.random()<Math.max(.07,Math.min(.62,.25+(oppPower-defence)/110)))oppGoals++;
+ }
+ const opp=opponent();
+ state.played.push({opponent:opp,gf:ourGoals,ga:oppGoals});
+ state.history.push({season:state.season,week:state.week,opponent:opp,gf:ourGoals,ga:oppGoals});
+ state.gf+=ourGoals;state.ga+=oppGoals;
+ let prize=1.1;
+ if(ourGoals>oppGoals){state.wins++;state.points+=3;prize=2.2;}
+ else if(ourGoals===oppGoals){state.draws++;state.points++;prize=1.5;}
+ else{state.losses++;prize=.7;}
+ state.money+=prize;
+ state.week++;
+ save();
+ lastMessage=ourGoals>oppGoals?`فوز رائع! هزمت ${opp} بنتيجة ${ourGoals}-${oppGoals}. حصلت على ${fmt(prize)}.`:ourGoals===oppGoals?`تعادل أمام ${opp} بنتيجة ${ourGoals}-${oppGoals}. حصلت على ${fmt(prize)}.`:`خسارة أمام ${opp} بنتيجة ${ourGoals}-${oppGoals}. حصلت على ${fmt(prize)}.`;
+ page="matches";render();
+}
+function action(a){
+ if(a.startsWith("page-")){page=a.slice(5);return render();}
+ if(a==="play")return playMatch();
+ if(a==="save-tactic"){
+  state.formation=$("formation").value;state.tactic=$("tactic").value;save();showMessage("تم حفظ الخطة وأسلوب اللعب.");page="squad";return;
+ }
+ if(a==="save-club"){
+  const name=$("clubname").value.trim();if(!name)return showMessage("اكتب اسم النادي أولاً.");
+  state.club=name;save();showMessage("تم تغيير اسم النادي إلى "+name);page="settings";return;
+ }
+ if(a==="save-game"){save();showMessage("تم حفظ تقدمك بنجاح على هذا المتصفح.");return;}
+ if(a==="reset"){if(confirm("هل تريد بدء لعبة جديدة؟ ستفقد الحفظ الحالي.")){state=fresh();page="home";lastMessage="بدأت مسيرة جديدة. بالتوفيق!";save();render();}return;}
+ if(a==="newseason"){
+  if(state.week<=10)return showMessage("أكمل مباريات الموسم أولاً.");
+  state.season++;state.week=1;state.played=[];state.wins=0;state.draws=0;state.losses=0;state.gf=0;state.ga=0;state.points=0;
+  save();showMessage("بدأ الموسم "+state.season+"! حان وقت المنافسة.");page="home";return;
+ }
+ if(a.startsWith("bench-")){
+  const id=Number(a.slice(6));if(state.starting.length<=7)return showMessage("احتفظ بعدد كافٍ من اللاعبين في التشكيلة.");
+  state.starting=state.starting.filter(x=>x!==id);save();return render();
+ }>a+p.ovr,0)/arr.length):0;}
+function updateStats(){
+ $("money").textContent=f
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Club Master FC</title>
+<style>
+:root{--bg:#08111f;--panel:#111e30;--panel2:#182940;--green:#29d17d;--gold:#ffcb55;--text:#f2f6fc;--muted:#9bacc2;--red:#ff626b}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Tahoma,sans-serif}
+header{padding:22px 16px;background:linear-gradient(135deg,#073c32,#10233c 70%,#162d49);border-bottom:1px solid #29415b}
+.brand{font-size:25px;font-weight:900;letter-spacing:.5px}
+.brand span{color:var(--green)}
+header p{color:#c4d5e5;margin:8px 0 0;font-size:13px}
+.wrap{max-width:1000px;margin:auto;padding:15px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:15px}
+.stat,.card{background:var(--panel);border:1px solid #23344a;border-radius:13px;padding:13px}
+.stat small{display:block;color:var(--muted);font-size:11px;margin-bottom:7px}
+.stat strong{font-size:17px}
+.green{color:var(--green)}.gold{color:var(--gold)}
+nav{display:flex;gap:7px;overflow:auto;padding:2px 0 12px}
+nav button{white-space:nowrap;background:var(--panel2);color:#d7e2ef;border:1px solid #2b3e55;border-radius:9px;padding:11px 14px;cursor:pointer}
+nav button.active{background:var(--green);color:#062116;border-color:var(--green);font-weight:bold}
+h2{font-size:19px;margin:5px 0 13px}
+h3{font-size:15px;margin:0 0 10px}
+p{line-height:1.6}
+.muted{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.btn{background:var(--green);color:#062318;border:0;border-radius:9px;padding:10px 13px;font-weight:bold;cursor:pointer}
+.btn.secondary{background:#253a53;color:white}
+.btn.goldbtn{background:var(--gold);color:#342400}
+.btn.danger{background:#4b222d;color:#ffd9dc}
+button:disabled{opacity:.4;cursor:not-allowed}
+input,select{background:#0b1727;color:white;border:1px solid #344a63;border-radius:8px;padding:10px;max-width:100%;width:100%;margin:5px 0 10px}
+label{font-size:12px;color:var(--muted)}
+.player{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#17273a;border:1px solid #263a50;border-radius:10px;padding:10px;margin:7px 0}
+.player strong{font-size:13px}.player small{display:block;color:var(--muted);margin-top:4px;font-size:11px}
+.rating{background:#234437;color:#8dffc3;border-radius:7px;padding:6px;font-weight:bold}
+.tag{font-size:11px;border-radius:6px;padding:5px 7px;background:#263a52;color:#d5e6f7}
+.pitch{background:linear-gradient(0deg,#105238,#126642);border:2px solid #60a47c;border-radius:12px;padding:12px 8px;margin:10px 0;position:relative;overflow:hidden}
+.pitch:before{content:"";position:absolute;inset:50% 0 auto;border-top:1px solid #8bc3a2}
+.pitch:after{content:"";position:absolute;width:100px;height:100px;border:1px solid #8bc3a2;border-radius:50%;left:calc(50% - 50px);top:calc(50% - 50px)}
+.line{display:flex;justify-content:space-around;gap:4px;position:relative;z-index:1;margin:12px 0 19px}
+.slot{background:#0a3526df;border:1px solid #77d4a1;border-radius:9px;padding:7px 3px;text-align:center;min-width:0;width:23%;font-size:11px;cursor:pointer}
+.slot b{display:block;font-size:14px;color:#fff;margin-bottom:4px}
+.slot span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.result{text-align:center;padding:20px 10px;background:#0b1727;border-radius:12px;margin:12px 0}
+.score{font-size:36px;font-weight:900;margin:10px}
+.notice{padding:11px;border-radius:9px;background:#172b3d;color:#dceaf7;font-size:13px;margin:10px 0}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th,td{text-align:center;padding:10px 5px;border-bottom:1px solid #2a3b50}
+th{color:var(--muted);font-weight:normal}
+tr.me{background:#153b31;color:#a4ffd1;font-weight:bold}
+.section{margin-bottom:14px}
+footer{text-align:center;color:#71859e;font-size:11px;padding:24px 8px}
+@media(max-width:520px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.stat strong{font-size:16px}.wrap{padding:11px}.brand{font-size:22px}.slot{font-size:10px;padding:7px 2px}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand">⚽ CLUB <span>MASTER FC</span></div>
+ <p>ابنِ فريقك · أدر انتقالاتك · اصنع تاريخ ناديك</p>
+</header>
+<main class="wrap">
+ <div class="stats">
+  <div class="stat"><small>💰 الميزانية</small><strong class="gold" id="money">20M €</strong></div>
+  <div class="stat"><small>⭐ قوة الفريق</small><strong id="power">75</strong></div>
+  <div class="stat"><small>🏆 نقاط الدوري</small><strong id="points">0</strong></div>
+  <div class="stat"><small>📅 الموسم</small><strong id="season">1</strong></div>
+ </div>
+ <nav id="nav">
+  <button class="active" data-page="home">🏠 الرئيسية</button>
+  <button data-page="squad">👥 الفريق</button>
+  <button data-page="market">🔄 الانتقالات</button>
+  <button data-page="matches">⚽ المباريات</button>
+  <button data-page="league">🏆 الدوري</button>
+  <button data-page="settings">⚙️ النادي</button>
+ </nav>
+ <div id="app"></div>
+ <footer>CLUB MASTER FC · لعبة إدارة كرة قدم مستقلة</footer>
+</main>
+<script>
+(()=>{
+"use strict";
+const $=id=>document.getElementById(id);
+const initialPlayers=[
+{id:1,name:"عمر الشناوي",pos:"GK",ovr:76,value:3.2},
+{id:2,name:"كريم حمدي",pos:"DF",ovr:74,value:2.8},
+{id:3,name:"أحمد منصور",pos:"DF",ovr:77,value:3.5},
+{id:4,name:"يوسف علي",pos:"DF",ovr:73,value:2.4},
+{id:5,name:"مروان فؤاد",pos:"DF",ovr:75,value:3},
+{id:6,name:"آدم مصطفى",pos:"MF",ovr:79,value:4.5},
+{id:7,name:"زياد حسن",pos:"MF",ovr:76,value:3.6},
+{id:8,name:"علي رامي",pos:"MF",ovr:78,value:4.2},
+{id:9,name:"عمر ياسين",pos:"FW",ovr:80,value:5.2},
+{id:10,name:"مالك إبراهيم",pos:"FW",ovr:77,value:4},
+{id:11,name:"سيف خالد",pos:"FW",ovr:75,value:3.4},
+{id:12,name:"حسن سامي",pos:"GK",ovr:68,value:0.8},
+{id:13,name:"فارس محمود",pos:"DF",ovr:70,value:1.4},
+{id:14,name:"نور الدين",pos:"DF",ovr:69,value:1.2},
+{id:15,name:"رامي أشرف",pos:"MF",ovr:72,value:1.8},
+{id:16,name:"باسم طارق",pos:"MF",ovr:70,value:1.5},
+{id:17,name:"يحيى عادل",pos:"FW",ovr:71,value:1.9},
+{id:18,name:"طارق أمين",pos:"FW",ovr:68,value:1.1}
+];
+const marketPlayers=[
+{name:"ماتيو سيلفا",pos:"FW",ovr:84,value:8.5},
+{name:"لوكا فيرّو",pos:"MF",ovr:83,value:8},
+{name:"دانيال كروز",pos:"DF",ovr:82,value:7},
+{name:"إلياس رويز",pos:"GK",ovr:81,value:6.5},
+{name:"آدم جونسون",pos:"FW",ovr:79,value:5},
+{name:"نادر منصور",pos:"MF",ovr:78,value:4.8},
+{name:"رافاييل كوستا",pos:"DF",ovr:77,value:4.2},
+{name:"سامي جابر",pos:"GK",ovr:73,value:2.8},
+{name:"كريم سعيد",pos:"FW",ovr:74,value:3.2},
+{name:"ماركو بيل",pos:"MF",ovr:81,value:6.2},
+{name:"بيدرو ليما",pos:"DF",ovr:80,value:6},
+{name:"فادي يوسف",pos:"FW",ovr:72,value:2.5}
+];
+const clubs=["النمور","الصقور","الأسود","الفرسان","النسور","الذئاب","النجوم","الأبطال","الشياطين الحمر","الملكي","الاتحاد","الشباب","المدينة","الأمل","البرق"];
+let state;
+function fresh(){
+ const roster=initialPlayers.map(p=>({...p}));
+ return {club:"Club Master FC",money:20,season:1,week:1,players:roster,starting:roster.slice(0,11).map(p=>p.id),formation:"4-3-3",tactic:"متوازن",played:[],wins:0,draws:0,losses:0,gf:0,ga:0,points:0,history:[],market:marketPlayers.map((p,i)=>({...p,id:100+i}))};
+}
+function load(){
+ try{let s=JSON.parse(localStorage.getItem("cmfc_save"));if(s&&s.players&&s.starting) return s;}catch(e){}
+ return fresh();
+}
+state=load();
+let page="home",lastMessage="أهلاً بك في Club Master FC! ابدأ بإدارة فريقك واستعد لأول مباراة.";
+const fmt=n=>Number(n).toFixed(1)+"M €";
+const posName=p=>({GK:"حارس",DF:"دفاع",MF:"وسط",FW:"هجوم"}[p]||p);
+function save(){try{localStorage.setItem("cmfc_save",JSON.stringify(state));}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function rating(){let arr=state.players.filter(p=>state.starting.includes(p.id));return arr.length?Math.round(arr.reduce((a,p)=>a+p.ovr,0)/arr.length):0;}
+function updateStats(){
+ $("money").textContent=fmt(state.money);
+ $("power").textContent=rating();
+ $("points").textContent=state.points;
+ $("season").textContent=state.season;
+}
+function btn(label,action,cls=""){return `<button class="btn ${cls}" data-action="${action}">${label}</button>`;}
+function card(title,content){return `<section class="card section"><h3>${title}</h3>${content}</section>`;}
+function showMessage(s){lastMessage=s;render();}
+function render(){
+ updateStats();
+ document.querySelectorAll("#nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===page));
+ const pages={home:homePage,squad:squadPage,market:marketPage,matches:matchesPage,league:leaguePage,settings:settingsPage};
+ $("app").innerHTML=pages[page]();
+}
+function homePage(){
+ let next=state.week<=10?`الجولة ${state.week} من 10`:"انتهى الموسم";
+ let recent=state.history.length?state.history[state.history.length-1]:"لم تلعب أي مباراة بعد.";
+ return `<h2>مرحباً بك يا مدير النادي 👋</h2>
+ <div class="notice">${esc(lastMessage)}</div>
+ <div class="grid">
+ ${card("🏟️ مركز إدارة النادي",`<p class="muted">النادي الحالي</p><h2>${esc(state.club)}</h2><p>القوة الإجمالية: <b class="green">${rating()}</b></p><p>الموسم: ${state.season} · ${next}</p>${btn("إدارة الفريق","page-squad")}${btn("سوق الانتقالات","page-market","secondary")}`)}
+ ${card("⚽ المباراة القادمة",`<div class="result"><div class="muted">الدوري المحلي</div><h3>${esc(state.club)}</h3><div class="score">VS</div><h3>${esc(opponent())}</h3><p class="muted">الجولة ${Math.min(state.week,10)}</p></div>${state.week<=10?btn("العب المباراة الآن","play","goldbtn"):btn("ابدأ موسم جديد","newseason")}`)}
+ ${card("📊 آخر نتيجة",`<p>${esc(recent)}</p><p class="muted">لعبت ${state.played.length} مباريات حتى الآن.</p>${btn("عرض النتائج","page-matches","secondary")}`)}
+ ${card("🎯 نصائح المدير",`<p class="muted">• حافظ على 11 لاعباً في التشكيلة.</p><p class="muted">• اشترِ لاعبين حسب احتياجاتك.</p><p class="muted">• الفوز يمنحك 3 نقاط ومكافأة مالية.</p><p class="muted">• احفظ تقدمك على نفس المتصفح تلقائياً.</p>`)}
+ </div>`;
+}
+function opponent(){
+ let idx=(state.week-1+state.season*3)%clubs.length;
+ let name=clubs[idx];
+ if(name===state.club)name=clubs[(idx+1)%clubs.length];
+ return name;
+}
+function squadPage(){
+ let arr=state.players.filter(p=>state.starting.includes(p.id));
+ const rows=arr.map(p=>`<div class="player"><div><strong>${esc(p.name)}</strong><small>${posName(p.pos)} · تقييم ${p.ovr}</small></div><span class="rating">${p.ovr}</span><button class="btn secondary" data-action="bench-${p.id}">إخراج</button></div>`).join("");
+ const bench=state.players.filter(p=>!state.starting.includes(p.id)).map(p=>`<div class="player"><div><strong>${esc(p.name)}</strong><small>${posName(p.pos)} · تقييم ${p.ovr}</small></div><span class="rating">${p.ovr}</span><button class="btn" data-action="start-${p.id}" ${state.starting.length>=11?"disabled":""}>إضافة</button></div>`).join("");
+ const slots=[
+ ["GK","حارس المرمى"],["DF","مدافع"],["DF","مدافع"],["DF","مدافع"],["DF","مدافع"],
+ ["MF","وسط"],["MF","وسط"],["MF","وسط"],["FW","مهاجم"],["FW","مهاجم"],["FW","مهاجم"]
+ ];
+ const groups=[arr.filter(p=>p.pos==="FW"),arr.filter(p=>p.pos==="MF"),arr.filter(p=>p.pos==="DF"),arr.filter(p=>p.pos==="GK")];
+ const pitch=groups.map(g=>`<div class="line">${g.map(p=>`<div class="slot" data-action="bench-${p.id}"><b>${p.ovr}</b><span>${esc(p.name)}</span><span>${p.pos}</span></div>`).join("")}</div>`).join("");
+ return `<h2>👥 تشكيلتك الأساسية</h2>
+ ${card("📋 خطة اللعب",`<label>اختيار الخطة</label><select id="formation"><option ${state.formation==="4-3-3"?"selected":""}>4-3-3</option><option ${state.formation==="4-4-2"?"selected":""}>4-4-2</option><option ${state.formation==="3-5-2"?"selected":""}>3-5-2</option></select><label>أسلوب اللعب</label><select id="tactic"><option ${state.tactic==="متوازن"?"selected":""}>متوازن</option><option ${state.tactic==="هجومي"?"selected":""}>هجومي</option><option ${state.tactic==="دفاعي"?"selected":""}>دفاعي</option></select>${btn("حفظ الخطة","save-tactic")}`)}
+ ${card("🏟️ ملعب الفريق",`<div class="pitch">${pitch}</div><p class="muted">اضغط على لاعب في الملعب لإخراجه من التشكيلة.</p><p>اللاعبون الأساسيون: ${arr.length}/11</p>`)}
+ ${card("🟢 التشكيلة الأساسية",rows||"<p>أضف لاعبين إلى التشكيلة.</p>")}
+ ${card("🪑 دكة البدلاء",bench||"<p>لا يوجد لاعبون إضافيون.</p>")}`;
+}
+function marketPage(){
+ const market=state.market.map(p=>`<div class="player"><div><strong>${esc(p.name)}</strong><small>${posName(p.pos)} · تقييم ${p.ovr} · ${fmt(p.value)}</small></div><span class="rating">${p.ovr}</span><button class="btn" data-action="buy-${p.id}" ${state.money<p.value?"disabled":""}>شراء</button></div>`).join("");
+ const sell=state.players.map(p=>`<div class="player"><div><strong>${esc(p.name)}</strong><small>${posName(p.pos)} · تقييم ${p.ovr} · قيمة ${fmt(p.value)}</small></div><button class="btn danger" data-action="sell-${p.id}">بيع</button></div>`).join("");
+ return `<h2>🔄 سوق الانتقالات</h2><div class="notice">ميزانيتك الحالية: <b class="gold">${fmt(state.money)}</b>. قيمة البيع تساوي 80% من قيمة اللاعب.</div>
+ ${card("🛒 اللاعبون المتاحون للشراء",market)}
+ ${card("💸 بيع لاعب من فريقك",sell)}`;
+}
+function matchesPage(){
+ const history=state.history.slice().reverse().map(h=>`<tr><td>${h.season}</td><td>${h.week}</td><td>${esc(h.opponent)}</td><td>${h.gf} - ${h.ga}</td><td>${h.gf>h.ga?"فوز":h.gf===h.ga?"تعادل":"خسارة"}</td></tr>`).join("");
+ return `<h2>⚽ المباريات والنتائج</h2>
+ ${card("المباراة القادمة",`<div class="result"><h3>${esc(state.club)}</h3><div class="score">VS</div><h3>${esc(opponent())}</h3><p class="muted">الجولة ${Math.min(state.week,10)}</p>${state.week<=10?btn("بدء المباراة","play","goldbtn"):btn("بدء موسم جديد","newseason")}</div>`)}
+ ${card("📜 سجل المباريات",`<div style="overflow-x:auto"><table><thead><tr><th>موسم</th><th>جولة</th><th>الخصم</th><th>النتيجة</th><th>الحالة</th></tr></thead><tbody>${history||'<tr><td colspan="5">لا توجد نتائج حتى الآن</td></tr>'}</tbody></table></div>`)}
+ ${card("📈 إحصائيات الموسم",`<p>لعب: ${state.played.length} · فوز: ${state.wins} · تعادل: ${state.draws} · خسارة: ${state.losses}</p><p>أهدافك: ${state.gf} · أهداف الخصوم: ${state.ga}</p>`)}`;
+}
+function leaguePage(){
+ let table=clubs.filter(c=>c!==state.club).slice(0,9).map((c,i)=>({name:c,pts:Math.max(0,24-i*2+((state.season+i)%4)),gf:18+i,ga:10+i*2,played:10})); 
+ table.push({name:state.club,pts:state.points,gf:state.gf,ga:state.ga,played:state.played.length});
+ table.sort((a,b)=>b.pts-a.pts||(b.gf-b.ga)-(a.gf-a.ga));
+ return `<h2>🏆 جدول الدوري</h2>${card("الموسم "+state.season,`<div style="overflow-x:auto"><table><thead><tr><th>#</th><th>النادي</th><th>لعب</th><th>له</th><th>عليه</th><th>نقاط</th></tr></thead><tbody>${table.map((t,i)=>`<tr class="${t.name===state.club?"me":""}"><td>${i+1}</td><td>${esc(t.name)}</td><td>${t.played}</td><td>${t.gf}</td><td>${t.ga}</td><td><b>${t.pts}</b></td></tr>`).join("")}</tbody></table></div><p class="muted">نتائج الأندية الأخرى محاكاة تقريبية، بينما نتائج ناديك محفوظة من مبارياتك.</p>`)}`;
+}
+function settingsPage(){
+ return `<h2>⚙️ إعدادات النادي</h2>
+ ${card("🏟️ اسم النادي",`<label>اكتب اسم ناديك</label><input id="clubname" maxlength="30" value="${esc(state.club)}" placeholder="اسم النادي"><p>${btn("حفظ الاسم","save-club")}</p>`)}
+ ${card("💾 حفظ اللعبة",`<p class="muted">تُحفظ بيانات اللعبة تلقائياً في المتصفح الحالي.</p>${btn("حفظ الآن","save-game")} ${btn("بدء لعبة جديدة","reset","danger")}`)}
+ ${card("ℹ️ عن اللعبة",`<p>Club Master FC هي لعبة مستقلة لإدارة كرة القدم، وليست لعبة رسمية لأي اتحاد أو نادٍ.</p><p class="muted">تقدم اللعبة محفوظ على نفس المتصفح والجهاز. مسح بيانات المتصفح قد يؤدي إلى فقدان الحفظ.</p>`)}`;
+}
+function playMatch(){
+ if(state.week>10){showMessage("انتهى الموسم! ابدأ موسماً جديداً لمواصلة اللعب.");return;}
+ if(state.starting.length<11){showMessage("لازم تختار 11 لاعباً في التشكيلة قبل المباراة.");page="squad";return render();}
+ const arr=state.players.filter(p=>state.starting.includes(p.id));
+ const power=arr.reduce((a,p)=>a+p.ovr,0)/arr.length;
+ const atk=arr.filter(p=>p.pos==="FW").reduce((a,p)=>a+p.ovr,0)/3;
+ const mid=arr.filter(p=>p.pos==="MF").reduce((a,p)=>a+p.ovr,0)/3;
+ const def=arr.filter(p=>p.pos==="DF").reduce((a,p)=>a+p.ovr,0)/4;
+ const keeper=arr.find(p=>p.pos==="GK")?.ovr||60;
+ let attack=atk*.45+mid*.3+power*.25;
+ let defence=def*.45+keeper*.3+power*.25;
+ if(state.tactic==="هجومي"){attack+=5;defence-=4;}
+ if(state.tactic==="دفاعي"){attack-=4;defence+=5;}
+ let oppPower=69+Math.random()*13;
+ let ourGoals=0,oppGoals=0;
+ for(let i=0;i<5;i++){
+  if(Math.random()<Math.max(.08,Math.min(.66,.27+(attack-oppPower)/100)))ourGoals++;
+  if(Math.random()<Math.max(.07,Math.min(.62,.25+(oppPower-defence)/110)))oppGoals++;
+ }
+ const opp=opponent();
+ state.played.push({opponent:opp,gf:ourGoals,ga:oppGoals});
+ state.history.push({season:state.season,week:state.week,opponent:opp,gf:ourGoals,ga:oppGoals});
+ state.gf+=ourGoals;state.ga+=oppGoals;
+ let prize=1.1;
+ if(ourGoals>oppGoals){state.wins++;state.points+=3;prize=2.2;}
+ else if(ourGoals===oppGoals){state.draws++;state.points++;prize=1.5;}
+ else{state.losses++;prize=.7;}
+ state.money+=prize;
+ state.week++;
+ save();
+ lastMessage=ourGoals>oppGoals?`فوز رائع! هزمت ${opp} بنتيجة ${ourGoals}-${oppGoals}. حصلت على ${fmt(prize)}.`:ourGoals===oppGoals?`تعادل أمام ${opp} بنتيجة ${ourGoals}-${oppGoals}. حصلت على ${fmt(prize)}.`:`خسارة أمام ${opp} بنتيجة ${ourGoals}-${oppGoals}. حصلت على ${fmt(prize)}.`;
+ page="matches";render();
+}
+function action(a){
+ if(a.startsWith("page-")){page=a.slice(5);return render();}
+ if(a==="play")return playMatch();
+ if(a==="save-tactic"){
+  state.formation=$("formation").value;state.tactic=$("tactic").value;save();showMessage("تم حفظ الخطة وأسلوب اللعب.");page="squad";return;
+ }
+ if(a==="save-club"){
+  const name=$("clubname").value.trim();if(!name)return showMessage("اكتب اسم النادي أولاً.");
+  state.club=name;save();showMessage("تم تغيير اسم النادي إلى "+name);page="settings";return;
+ }
+ if(a==="save-game"){save();showMessage("تم حفظ تقدمك بنجاح على هذا المتصفح.");return;}
+ if(a==="reset"){if(confirm("هل تريد بدء لعبة جديدة؟ ستفقد الحفظ الحالي.")){state=fresh();page="home";lastMessage="بدأت مسيرة جديدة. بالتوفيق!";save();render();}return;}
+ if(a==="newseason"){
+  if(state.week<=10)return showMessage("أكمل مباريات الموسم أولاً.");
+  state.season++;state.week=1;state.played=[];state.wins=0;state.draws=0;state.losses=0;state.gf=0;state.ga=0;state.points=0;
+  save();showMessage("بدأ الموسم "+state.season+"! حان وقت المنافسة.");page="home";return;
+ }
+ if(a.startsWith("bench-")){
+  const id=Number(a.slice(6));if(state.starting.length<=7)return showMessage("احتفظ بعدد كافٍ من اللاعبين في التشكيلة.");
+  state.starting=state.starting.filter(x=>x!==id);save();return render();
+ }
+ if(a.startsWith("start-")){
+  const id=Number(a.slice(6));if(state.starting.length>=11)return showMessage("التشكيلة مكتملة. أخرج لاعباً أولاً.");
+  if(!state.players.some(p=>p.id===id))return;
+  state.starting.push(id);save();return render();
+ }
+ if(a.startsWith("buy-")){
+  const id=Number(a.slice(4)),p=state.market.find(x=>x.id===id);
+  if(!p)return;
+  if(state.money<p.value)return showMessage("ميزانيتك لا تكفي لشراء هذا اللاعب.");
+  if(state.players.length>=30)return showMessage("قائمة الفريق ممتلئة. بع لاعباً أولاً.");
+  state.money-=p.value;state.players.push({...p});state.market=state.market.filter(x=>x.id!==id);save();showMessage("تم التعاقد مع "+p.name+" بنجاح!");page="market";return;
+ }
+ if(a.startsWith("sell-")){
+  const id=Number(a.slice(5)),p=state.players.find(x=>x.id===id);
+  if(!p)return;
+  if(state.players.length<=11)return showMessage("لا يمكنك البيع إذا كان لديك 11 لاعباً فقط.");
+  if(state.starting.includes(id))return showMessage("أخرج اللاعب من التشكيلة الأساسية قبل بيعه.");
+  if(!confirm("هل تريد بيع "+p.name+" مقابل "+fmt(p.value*.8)+"؟"))return;
+  state.money+=p.value*.8;state.players=state.players.filter(x=>x.id!==id);
+  state.market.push({...p,id:Math.max(100,...state.market.map(x=>x.id))+1,value:Math.round(p.value*.9*10)/10});
+  save();showMessage("تم بيع "+p.name+" بنجاح.");page="market";return;
+ }
+}
+document.addEventListener("click",e=>{
+ const nav=e.target.closest("nav button");
+ if(nav){page=nav.dataset.page;render();return;}
+ const b=e.target.closest("[data-action]");
+ if(b&&!b.disabled)action(b.dataset.action);
+});
+document.addEventListener("change",e=>{
+ if(e.target.id==="formation")state.formation=e.target.value;
+ if(e.target.id==="tactic")state.tactic=e.target.value;
+});
+render();
+})();
+</script>
+</body>
+</html>
